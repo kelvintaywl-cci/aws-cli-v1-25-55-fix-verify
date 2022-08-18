@@ -30,3 +30,7 @@ https://github.com/aws/aws-cli/blob/develop/CHANGELOG.rst#12555
 This repo thus runs a CircleCI build to verify AWS CLI version, and check that a AWS profile is set up correctly.
 
 I have set up a control job which uses the latest Orb, and is expected to install AWS CLI v2.x (no issues).
+
+## Additional:
+
+See https://discuss.circleci.com/t/error-the-config-profile-default-could-not-be-found-when-configuring-aws-cli/45119
