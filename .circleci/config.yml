@@ -5,6 +5,9 @@ orbs:
 
 jobs:
   verify:
+    environment:
+      AWS_REGION: us-east-1
+      AWS_DEFAULT_REGION: us-east-1
     executor: aws-cli/default
     steps:
       - aws-cli/setup
