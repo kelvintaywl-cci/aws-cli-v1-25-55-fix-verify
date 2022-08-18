@@ -6,46 +6,48 @@ orbs:
   # see https://circleci.com/developer/orbs/orb/circleci/aws-cli
   aws-cli-old: circleci/aws-cli@1.3.1
 
+commands:
+  check-aws-version:
+    steps:
+      - run: aws --version
+  check-assumed-identity:
+    steps:
+      - run: |
+          aws sts get-caller-identity | jq ".UserId"
+
 jobs:
   verify:
     parameters:
       aws-cli-version:
         type: enum
-        enum: ["latest", "2", "1"]
-      latest-orb:
-        type: boolean
-        default: true
+        enum: ["2", "1"]
     environment:
       AWS_REGION: us-east-1
       AWS_DEFAULT_REGION: us-east-1
-    executor: aws-cli/default
+    executor: aws-cli-old/default
     steps:
-      - when:
-          condition: << parameters.latest-orb >>
-          steps:
-            - aws-cli/setup:
-                version: << parameters.aws-cli-version >>
-      - unless:
-          condition: << parameters.latest-orb >>
-          steps:
-            - aws-cli-old/setup:
-                version: << parameters.aws-cli-version >>   
-      - run: aws --version
-      - run: |
-          aws sts get-caller-identity | jq ".UserId"
+      - aws-cli-old/setup:
+          version: << parameters.aws-cli-version >>
+      - check-aws-version
+      - check-assumed-identity
 
+  control:
+    # using latest orb, should install AWS CLI v2.x
+    executor: aws-cli/default
+    environment:
+      AWS_REGION: us-east-1
+      AWS_DEFAULT_REGION: us-east-1
+    steps:
+      - aws-cli/setup
+      - check-aws-version
+      - check-assumed-identity
 workflows:
   the-fix:
     jobs:
       - verify:
-          name: verify-orb-v-1-3-1-aws-v2
-          aws-cli-version: "2"
-          latest-orb: false
-      - verify:
-          name: verify-orb-v-1-3-1-aws-v1
-          aws-cli-version: "1"
-          latest-orb: false
-      - verify:
-          name: verify-orb-v-3-1-1-aws-v2
-          aws-cli-version: 'latest'
-          latest-orb: true
+          matrix:
+            parameters:
+              aws-cli-version:
+                - "1"
+                - "2"
+      - control
