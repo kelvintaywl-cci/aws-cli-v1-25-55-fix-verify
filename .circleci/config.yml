@@ -8,7 +8,7 @@ jobs:
     executor: aws-cli/default
     steps:
       - aws-cli/setup
-      - run: aws version
+      - run: aws --version
       - run: |
           aws sts get-caller-identity | jq ".UserId"
 
