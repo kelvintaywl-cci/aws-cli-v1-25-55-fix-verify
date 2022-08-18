@@ -10,8 +10,8 @@ jobs:
   verify:
     parameters:
       aws-cli-version:
-        type: string
-        default: latest
+        type: enum
+        enum: ["latest", "2", "1"]
       latest-orb:
         type: boolean
         default: true
@@ -20,14 +20,16 @@ jobs:
       AWS_DEFAULT_REGION: us-east-1
     executor: aws-cli/default
     steps:
-      - when: << parameters.latest-orb >>
-        steps:
-          - aws-cli/setup:
-              version: << parameters.aws-cli-version >>
-      - unless: << parameters.latest-orb >>
-        steps:
-          - aws-cli-old/setup:
-               version: << parameters.aws-cli-version >>   
+      - when:
+          condition: << parameters.latest-orb >>
+          steps:
+            - aws-cli/setup:
+                version: << parameters.aws-cli-version >>
+      - unless:
+          condition: << parameters.latest-orb >>
+          steps:
+            - aws-cli-old/setup:
+                version: << parameters.aws-cli-version >>   
       - run: aws --version
       - run: |
           aws sts get-caller-identity | jq ".UserId"
@@ -37,11 +39,11 @@ workflows:
     jobs:
       - verify:
           name: verify-orb-v-1-3-1-aws-v2
-          aws-cli-version: '2'
+          aws-cli-version: "2"
           latest-orb: false
       - verify:
           name: verify-orb-v-1-3-1-aws-v1
-          aws-cli-version: '1'
+          aws-cli-version: "1"
           latest-orb: false
       - verify:
           name: verify-orb-v-3-1-1-aws-v2
